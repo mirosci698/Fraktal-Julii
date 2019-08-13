@@ -1,0 +1,40 @@
+#dla ASM
+.def
+.vcxproj
+.filters
+.txt
+.log
+.tlog
+.lastbuildstate
+.obj
+
+#dla C
+.h
+.vcxproj
+.filters
+.tlog
+.obj
+.idb
+.pdb
+.lastbuildstate
+.pch
+.log
+
+.ipch
+
+#dla MAIN
+.h
+.vcxproj
+.filters
+.user
+.txt
+.log
+.tlog
+.obj
+.pch
+.pdb
+.idb
+.lastbuildstate
+
+.sln
+.db

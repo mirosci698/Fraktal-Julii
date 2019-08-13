@@ -1,0 +1,4 @@
+0.1 - 22.10.2018r. - Utworzenie projektu Microsoft Visual Studio 2015, rozdzielenie i utworzenie bibliotek *.dll
+i ich wykorzystanie.
+0.2 - 29.10.2018r. - Wykrywanie liczby rdzeni, obsługa danych wejściowych i przełączników.
+0.3 - 5.11.2018r. - Tworzenie wątków i podział danych przekazywanych do nich.
