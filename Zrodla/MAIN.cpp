@@ -11,8 +11,9 @@
 #include <sstream>
 #include <vector>
 #include <fstream>
+#include <ctime>
 
-#define WYSOKOSC 1440	//przyjmujemy rozdzielczoœæ fHD i 24 bitow¹ g³êbie kolorów
+#define WYSOKOSC 1440//przyjmujemy rozdzielczoœæ fHD i 24 bitow¹ g³êbie kolorów
 #define SZEROKOSC 1920
 #define BAJTY_KOLOROW 4
 #define ILOSC_FLOAT 2
@@ -74,28 +75,51 @@ int main(int argc, char* argv[])
 	//uchwyt do biblioteki i œci¹gniêcie funkcji asemblerowej
 	HINSTANCE dllHandle = NULL;
 	dllHandle = LoadLibrary(L"DLL_ASM.dll");
-	FraktalJulii procedura = (FraktalJulii)GetProcAddress(dllHandle, "FraktalJulii");
+	//FraktalJulii procedura = (FraktalJulii)GetProcAddress(dllHandle, "FraktalJulii");
 	//dzia³anie w zale¿noœci od poprawnej liczby w¹tków i argumentów
 	clock_t * czasy = new clock_t[liczbaWatkow * 2];
-	
+	void(*funkcja)(float*, unsigned char*, int, int, clock_t*);
 	if (liczbaWatkow > -1 && argc > 3 && !strumienWej.fail())
+	{
+		if (tryb == "-c")
+			funkcja = fraktalJulii;
+		else
+			if (tryb == "-a")
+			{
+				funkcja = (void(*)(float*, unsigned char*, int, int, clock_t*))GetProcAddress(dllHandle, "FraktalJulii");
+			}
+		clock_t czas1 = clock();
+		for (int i = 0; i < liczbaWatkow; i++)
+			watki.push_back(std::thread(funkcja, daneFloat, &piksele[i * offset * SZEROKOSC + i* offsety[i]], i * offset * SZEROKOSC + i*offsety[i], offset * SZEROKOSC + offsety[i + 1], &czasy[2 * i]));
+		//dodanie konkretnej iloœci w¹tków i funkcji z arg. do nich
+		for (int i = 0; i < liczbaWatkow; i++)
+			watki[i].join(); //wywo³anie w¹tków
+		clock_t czas2 = clock();
+		std::cout << "Wykonano" << std::endl;
+		std::cout << "Czas: " << (double)(czas2 - czas1) / CLOCKS_PER_SEC * 1.0 << std::endl;
+	}
+	/*if (liczbaWatkow > -1 && argc > 3 && !strumienWej.fail())
 		if (tryb == "-c")
 		{
+			clock_t czas1 = clock();
 			for (int i = 0; i < liczbaWatkow; i++)
 				watki.push_back(std::thread(fraktalJulii, daneFloat, &piksele[i * offset * SZEROKOSC + i* offsety[i]], i * offset * SZEROKOSC + i*offsety[i], offset * SZEROKOSC + offsety[i + 1], &czasy[2*i]));
 			//dodanie konkretnej iloœci w¹tków i funkcji z arg. do nich
 			for (int i = 0; i < liczbaWatkow; i++)
 				watki[i].join(); //wywo³anie w¹tków
+			clock_t czas2 = clock();
+			std::cout << "Wykonano" << std::endl;
+			std::cout << "Czas: " << (double)(czas2 - czas1)/CLOCKS_PER_SEC * 1.0 << std::endl;
 		}
 		else
 			if (tryb == "-a")
 			{
 				for (int i = 0; i < liczbaWatkow; i++)
-					watki.push_back(std::thread(procedura, daneFloat, &piksele[i * offset * SZEROKOSC + i* offsety[i]], i * offset * SZEROKOSC + i*offsety[i], offset * SZEROKOSC + offsety[i + 1]));
+					watki.push_back(std::thread(procedura, daneFloat, &piksele[i * offset * SZEROKOSC + i* offsety[i]], i * offset * SZEROKOSC + i*offsety[i], offset * SZEROKOSC + offsety[i + 1], &czasy[2 * i]));
 				//dodanie konkretnej iloœci w¹tków i funkcji z arg. do nich
 				for (int i = 0; i < liczbaWatkow; i++)
 					watki[i].join(); //wywo³anie w¹tków
-			}
+			}*/
 	std::cout << "Checkpoint" << std::endl;
 
 	clock_t min = czasy[0];

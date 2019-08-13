@@ -63,5 +63,6 @@ void fraktalJulii(float* tablica, unsigned char* tablicaPixeli, int index, int o
 	koniec = clock();
 	tablicaCzasow[0] = start;
 	tablicaCzasow[1] = koniec;
+	std::cout << "fraktal koniec" << std::endl;
 }
 
