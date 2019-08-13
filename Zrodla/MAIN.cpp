@@ -3,18 +3,17 @@
 
 #include "stdafx.h"
 #include "MAIN.h"
-#include <iostream>
+#include <iostream> //wypis informacji w konsoli
 #include "DLL_C.h"
-#include <cstdlib>
-#include <thread>
-#include <complex>
-#include <sstream>
-#include <vector>
-#include <fstream>
-#include <ctime>
+#include <thread> //w¹tki
+#include <complex> //odpowiednie wczytanie wartoœci zespolonej
+#include <sstream>  //odpowiednie wczytanie wartoœci zespolonej
+#include <vector> //tworzymy vector ¿eby nie tworzyæ na stosie
+#include <fstream> //obs³uga plików
+#include <ctime> //pomiar czasu
 
-#define WYSOKOSC 1440//przyjmujemy rozdzielczoœæ fHD i 24 bitow¹ g³êbie kolorów
-#define SZEROKOSC 1920
+#define WYSOKOSC 14400//przyjmujemy rozdzielczoœæ i 24 bitow¹ g³êbie kolorów
+#define SZEROKOSC 19200
 #define BAJTY_KOLOROW 4
 #define ILOSC_FLOAT 2
 
@@ -39,7 +38,7 @@ int main(int argc, char* argv[])
 				tryb = s;
 		}
 	else
-		std::cout << "Z³a liczba argumentów!" << std::endl;
+		std::cout << "Z³a liczba argumentow!" << std::endl;
 	//Sprawdzanie iloœæi w¹tów w komputerze
 	unsigned int iloscWatkowSprzetowych = std::thread::hardware_concurrency();
 	//Sprawdzanie poprawnoœci danych i parsowanie
@@ -51,7 +50,7 @@ int main(int argc, char* argv[])
 	std::complex<float> zespolona;
 	strumienWej >> zespolona;
 	if (strumienWej.fail())
-		std::cout << "Nie podano sta³ej zespolonej!" << std::endl;
+		std::cout << "Nie podano stalej zespolonej!" << std::endl;
 	//Przechowanie realis i imaginalis w 2elementowej tablicy float-ów - ³atwiejsze przekazanie do funkcji
 	float daneFloat[ILOSC_FLOAT];
 	daneFloat[0] = zespolona.real();
@@ -75,86 +74,41 @@ int main(int argc, char* argv[])
 	//uchwyt do biblioteki i œci¹gniêcie funkcji asemblerowej
 	HINSTANCE dllHandle = NULL;
 	dllHandle = LoadLibrary(L"DLL_ASM.dll");
-	//FraktalJulii procedura = (FraktalJulii)GetProcAddress(dllHandle, "FraktalJulii");
-	//dzia³anie w zale¿noœci od poprawnej liczby w¹tków i argumentów
-	//clock_t * czasy = new clock_t[liczbaWatkow * 2];
-	void(*funkcja)(float*, unsigned char*, int, int);
+	//wskaŸnik na funkcjê - z C lub asm i przypisanie w zale¿noœci od prze³¹cznika
+	void(*funkcja)(float*, unsigned char*, int, int); 
 	if (liczbaWatkow > -1 && argc > 3 && !strumienWej.fail())
 	{
-		if (tryb == "-c")
+		if (tryb == "-c") //przypisanie w zale¿noœci od prze³¹cznika
 			funkcja = fraktalJulii;
 		else
 			if (tryb == "-a")
-			{
 				funkcja = (void(*)(float*, unsigned char*, int, int))GetProcAddress(dllHandle, "FraktalJulii");
-			}
-		std::cout << "1: " << daneFloat << std::endl;
-		int i = 0;
-		unsigned char * wskaznik = &piksele[i * offset * SZEROKOSC + i* offsety[i]];
-		std::cout << "2: " << wskaznik << std::endl;
-		std::cout << "3: " << i * offset * SZEROKOSC + i*offsety[i] << std::endl;
-		std::cout << "4: " << offset * SZEROKOSC + offsety[i + 1] << std::endl;
-		clock_t czas1 = clock();
-		for (int i = 0; i < liczbaWatkow; i++)
+		clock_t czas1 = clock(); //odczyt czasu przed w¹tkami
+		for (int i = 0; i < liczbaWatkow; i++) //dodanie konkretnej iloœci w¹tków i funkcji z arg. do nich
 			watki.push_back(std::thread(funkcja, daneFloat, &piksele[i * offset * SZEROKOSC + i* offsety[i]], i * offset * SZEROKOSC + i*offsety[i], offset * SZEROKOSC + offsety[i + 1]));
-		//dodanie konkretnej iloœci w¹tków i funkcji z arg. do nich
 		for (int i = 0; i < liczbaWatkow; i++)
 			watki[i].join(); //wywo³anie w¹tków
-		clock_t czas2 = clock();
+		clock_t czas2 = clock(); //odczyt czasu po w¹tkach
 		std::cout << "Wykonano" << std::endl;
 		std::cout << "Czas: " << (double)(czas2 - czas1) / CLOCKS_PER_SEC * 1.0 << std::endl;
 	}
-	/*if (liczbaWatkow > -1 && argc > 3 && !strumienWej.fail())
-		if (tryb == "-c")
-		{
-			clock_t czas1 = clock();
-			for (int i = 0; i < liczbaWatkow; i++)
-				watki.push_back(std::thread(fraktalJulii, daneFloat, &piksele[i * offset * SZEROKOSC + i* offsety[i]], i * offset * SZEROKOSC + i*offsety[i], offset * SZEROKOSC + offsety[i + 1], &czasy[2*i]));
-			//dodanie konkretnej iloœci w¹tków i funkcji z arg. do nich
-			for (int i = 0; i < liczbaWatkow; i++)
-				watki[i].join(); //wywo³anie w¹tków
-			clock_t czas2 = clock();
-			std::cout << "Wykonano" << std::endl;
-			std::cout << "Czas: " << (double)(czas2 - czas1)/CLOCKS_PER_SEC * 1.0 << std::endl;
-		}
-		else
-			if (tryb == "-a")
-			{
-				for (int i = 0; i < liczbaWatkow; i++)
-					watki.push_back(std::thread(procedura, daneFloat, &piksele[i * offset * SZEROKOSC + i* offsety[i]], i * offset * SZEROKOSC + i*offsety[i], offset * SZEROKOSC + offsety[i + 1], &czasy[2 * i]));
-				//dodanie konkretnej iloœci w¹tków i funkcji z arg. do nich
-				for (int i = 0; i < liczbaWatkow; i++)
-					watki[i].join(); //wywo³anie w¹tków
-			}*/
-	std::cout << "Checkpoint" << std::endl;
-
-	/*clock_t min = czasy[0];
-	clock_t max = czasy[1];
-	for (int i = 1; i < liczbaWatkow; i++)
-	{
-		if (czasy[2 * i] < min)
-			min = czasy[2 * i];
-		if (czasy[2 * i + 1] > max)
-			max = czasy[2 * i + 1];
-	}*/
-	//double czasWykonania = static_cast < double >(max - min) / CLOCKS_PER_SEC;
-	//std::cout << "Time: " << czasWykonania << std::endl;
+	std::cout << "Zapis do pliku. Nie zamykaj do informacji o zakonczeniu zapisu." << std::endl;
 	//uzupe³nienie wartoœci wszystkich 4 bajtów odpowiedzialnych za piksel
 	std::vector<unsigned char> wyjsciowa(WYSOKOSC * SZEROKOSC * BAJTY_KOLOROW);
 	for (int i = 0; i < WYSOKOSC * SZEROKOSC; i++)
 	{
 		for (int j = 0; j < BAJTY_KOLOROW - 1; j++) //alfa ustalamy osobno
-			wyjsciowa[i*BAJTY_KOLOROW + j] = piksele[i];
-		wyjsciowa[i*BAJTY_KOLOROW + BAJTY_KOLOROW - 1] = 255;
+			wyjsciowa[i*BAJTY_KOLOROW + j] = piksele[i]; //wartoœæ piksela policzona raz i powielona - skala szaroœci
+		wyjsciowa[i*BAJTY_KOLOROW + BAJTY_KOLOROW - 1] = 255; //alfa
 	}
-	//nag³ówek bitmapy
+	//nag³ówek bitmapy - uzupe³nienie odpowiednich wartoœci pliku bitmapy
 	BMPHeader naglowek1;
 	naglowek1.Signature = 0x4D42;
 	naglowek1.FileSize = 0x7A + wyjsciowa.size();
 	naglowek1.Reserved1 = 0;
 	naglowek1.Reserved2 = 0;
 	naglowek1.Offset = 0x7A;
-	//nag³ówek DIB
+	//nag³ówek DIB - uzupe³nienie odpowiednich wartoœci pliku bitmapy
 	DIBHeader naglowek2;
 	naglowek2.DIBHeaderSize = 0x6C;
 	naglowek2.ImageWidth = SZEROKOSC;
@@ -177,9 +131,9 @@ int main(int argc, char* argv[])
 	naglowek2.RedGamma = 0;
 	naglowek2.GreenGamma = 0;
 	naglowek2.BlueGamma = 0;
-	std::ofstream plik;
+	std::ofstream plik; //utworzenie pliku bitmapy
 	plik.open("Julia.bmp", std::ios::binary);
-	plik.write((const char *)& naglowek1.Signature, sizeof naglowek1.Signature);
+	plik.write((const char *)& naglowek1.Signature, sizeof naglowek1.Signature); //zapis kolejnych bajtów z odpowiednimi wartoœciami
 	plik.write((const char *)& naglowek1.FileSize, sizeof naglowek1.FileSize);
 	plik.write((const char *)& naglowek1.Reserved1, sizeof naglowek1.Reserved1);
 	plik.write((const char *)& naglowek1.Reserved2, sizeof naglowek1.Reserved2);
@@ -210,15 +164,12 @@ int main(int argc, char* argv[])
 	plik.write((const char *)& naglowek2.GreenGamma, sizeof naglowek2.GreenGamma);
 	plik.write((const char *)& naglowek2.BlueGamma, sizeof naglowek2.BlueGamma);
 
-	for (int i = 0; i < WYSOKOSC; i++)
+	for (int i = 0; i < WYSOKOSC; i++) //zapis wszystkich bitów bitmapy (w postaci 4 bajtów RGBA)
 		for (int j = 0; j < SZEROKOSC; j++)
-			for (int k = 0; k < BAJTY_KOLOROW; k++)
+			for (int k = 0; k < BAJTY_KOLOROW; k++) //zapis od ty³u, gdy¿ tak przechowywane s¹ informacje w bmp
 				plik.write((const char *)& wyjsciowa[(WYSOKOSC - i - 1)*SZEROKOSC*BAJTY_KOLOROW + j*BAJTY_KOLOROW + k], sizeof wyjsciowa[(WYSOKOSC - i - 1)*SZEROKOSC*BAJTY_KOLOROW + j*BAJTY_KOLOROW + k]);
-	/*for (int i = 0; i < wyjsciowa.size(); i++)
-		plik.write((const char *)& wyjsciowa[i], sizeof wyjsciowa[i]);*/
 	plik.close();
-	std::cout << "Ready.";
-
+	std::cout << "Zapisano. <Enter> by zakonczyc.";
 	getchar();
     return 0;
 }
