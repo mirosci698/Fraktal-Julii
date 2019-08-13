@@ -4,3 +4,4 @@ i ich wykorzystanie.
 0.3 - 5.11.2018r. - Tworzenie wątków i podział danych przekazywanych do nich.
 0.4 - 10.11.2018r. - Algorytm w języku C++.
 0.5 - 18.11.2018r. - Wskaźnik na funkcję zamiast instrukcji "if" w MAIN.
+0.6 - 25.11.2018r. - Pomiar czasu poza funkcją. Wersja wstępna funkcji asemblerowej.

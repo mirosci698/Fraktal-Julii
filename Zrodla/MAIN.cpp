@@ -77,8 +77,8 @@ int main(int argc, char* argv[])
 	dllHandle = LoadLibrary(L"DLL_ASM.dll");
 	//FraktalJulii procedura = (FraktalJulii)GetProcAddress(dllHandle, "FraktalJulii");
 	//dzia³anie w zale¿noœci od poprawnej liczby w¹tków i argumentów
-	clock_t * czasy = new clock_t[liczbaWatkow * 2];
-	void(*funkcja)(float*, unsigned char*, int, int, clock_t*);
+	//clock_t * czasy = new clock_t[liczbaWatkow * 2];
+	void(*funkcja)(float*, unsigned char*, int, int);
 	if (liczbaWatkow > -1 && argc > 3 && !strumienWej.fail())
 	{
 		if (tryb == "-c")
@@ -86,11 +86,17 @@ int main(int argc, char* argv[])
 		else
 			if (tryb == "-a")
 			{
-				funkcja = (void(*)(float*, unsigned char*, int, int, clock_t*))GetProcAddress(dllHandle, "FraktalJulii");
+				funkcja = (void(*)(float*, unsigned char*, int, int))GetProcAddress(dllHandle, "FraktalJulii");
 			}
+		std::cout << "1: " << daneFloat << std::endl;
+		int i = 0;
+		unsigned char * wskaznik = &piksele[i * offset * SZEROKOSC + i* offsety[i]];
+		std::cout << "2: " << wskaznik << std::endl;
+		std::cout << "3: " << i * offset * SZEROKOSC + i*offsety[i] << std::endl;
+		std::cout << "4: " << offset * SZEROKOSC + offsety[i + 1] << std::endl;
 		clock_t czas1 = clock();
 		for (int i = 0; i < liczbaWatkow; i++)
-			watki.push_back(std::thread(funkcja, daneFloat, &piksele[i * offset * SZEROKOSC + i* offsety[i]], i * offset * SZEROKOSC + i*offsety[i], offset * SZEROKOSC + offsety[i + 1], &czasy[2 * i]));
+			watki.push_back(std::thread(funkcja, daneFloat, &piksele[i * offset * SZEROKOSC + i* offsety[i]], i * offset * SZEROKOSC + i*offsety[i], offset * SZEROKOSC + offsety[i + 1]));
 		//dodanie konkretnej iloœci w¹tków i funkcji z arg. do nich
 		for (int i = 0; i < liczbaWatkow; i++)
 			watki[i].join(); //wywo³anie w¹tków
@@ -122,7 +128,7 @@ int main(int argc, char* argv[])
 			}*/
 	std::cout << "Checkpoint" << std::endl;
 
-	clock_t min = czasy[0];
+	/*clock_t min = czasy[0];
 	clock_t max = czasy[1];
 	for (int i = 1; i < liczbaWatkow; i++)
 	{
@@ -130,9 +136,9 @@ int main(int argc, char* argv[])
 			min = czasy[2 * i];
 		if (czasy[2 * i + 1] > max)
 			max = czasy[2 * i + 1];
-	}
-	double czasWykonania = static_cast < double >(max - min) / CLOCKS_PER_SEC;
-	std::cout << "Time: " << czasWykonania << std::endl;
+	}*/
+	//double czasWykonania = static_cast < double >(max - min) / CLOCKS_PER_SEC;
+	//std::cout << "Time: " << czasWykonania << std::endl;
 	//uzupe³nienie wartoœci wszystkich 4 bajtów odpowiedzialnych za piksel
 	std::vector<unsigned char> wyjsciowa(WYSOKOSC * SZEROKOSC * BAJTY_KOLOROW);
 	for (int i = 0; i < WYSOKOSC * SZEROKOSC; i++)

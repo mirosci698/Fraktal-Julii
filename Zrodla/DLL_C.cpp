@@ -3,25 +3,17 @@
 
 #include "stdafx.h"
 #include "DLL_C.h"
-#include <vector>
-#include <iostream>
-#include <ctime>
 
 #define WYSOKOSC 1440 //1080
 #define SZEROKOSC 1920 //1920
 
-struct zespolona {
+/*struct zespolona {
 	float re;
 	float im;
-};
+};*/
 
-void fraktalJulii(float* tablica, unsigned char* tablicaPixeli, int index, int offsetPikseli, clock_t* tablicaCzasow)
+void fraktalJulii(float* tablica, unsigned char* tablicaPixeli, int index, int offsetPikseli)
 {
-	std::cout << "fraktal " << std::endl;
-
-	clock_t start;
-	start = clock();
-
 	float maxRe = 1.6;
 	float minRe = -1.6;
 	float maxIm = 1.2;
@@ -34,35 +26,36 @@ void fraktalJulii(float* tablica, unsigned char* tablicaPixeli, int index, int o
 
 	int offsetwierszy = offsetPikseli / SZEROKOSC;
 
+	unsigned char iteracja;
+	float re;
+	float im;
+	float modul2;
+	float starere;
+	float stareim;
+
 	for (int i = wiersze; i < wiersze + offsetwierszy; i++)
+	{
 		for (int j = 0; j < SZEROKOSC; j++) //po pikselach
 		{
 			//petla ciagu
-			float punktRe = minRe + j*wspRe;
-			float punktIm = minIm + i*wspIm;
-			unsigned char iteracja = 0;
-			zespolona z;
-			z.re = punktRe;
-			z.im = punktIm;
-			float modul2 = 0;
+			iteracja = 0;
+			re = minRe + j*wspRe;
+			im = minIm + i*wspIm;
+			//float modul2 = 0;
 			do {
 				//kwadrat
-				float starere = z.re;
-				float stareim = z.im;
-				z.re = starere*starere - stareim*stareim;
-				z.im = 2 * starere*stareim;
-				z.re += tablica[0];
-				z.im += tablica[1];
+				starere = re;
+				//stareim = im;
+				re = re*re - im*im;
+				im = 2 * starere*im;
+				re += tablica[0];
+				im += tablica[1];
 				iteracja++;
-				modul2 = z.re*z.re + z.im*z.im;
+				modul2 = re*re + im*im;
 			} while (modul2 < 4 && iteracja < 255);
 			//std::cout << "Piksel " << i << " " << j << "wyliczony" << std::endl;
 			tablicaPixeli[(i - wiersze)*SZEROKOSC + j] = iteracja; //jeden kolor
 		}
-	clock_t koniec;
-	koniec = clock();
-	tablicaCzasow[0] = start;
-	tablicaCzasow[1] = koniec;
-	std::cout << "fraktal koniec" << std::endl;
+	}
 }
 
